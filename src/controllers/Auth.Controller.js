@@ -41,7 +41,7 @@ res.status(201).json({status:"SuccessFull", message:"user created succesfully,",
 
 }catch(err){
     console.log(err)
-    res.status(500).json({status:"Error",mesage:err.message})
+    res.status(500).json({status:"Error",message:err.message})
 }
 
 
@@ -56,12 +56,12 @@ if(!email || !password){
    return  res.status(400).json({message:"Please fill all the inputs."})
     }
     try{
-     const existingUser=await  AuthUser({email})
+     const existingUser=await  AuthUser.findOne({email})
      if(!existingUser){
-        return res.status(404).json({mesage:"Invalid email or password."})
+        return res.status(404).json({message:"Invalid email or password."})
      }
 
-  const comparePassword = bcrypt.compare(password,existingUser.password)
+  const comparePassword = await bcrypt.compare(password,existingUser.password)
   if(!comparePassword){
     return res.status(404).json({message:"Invalid email or password."})
   } 
@@ -70,7 +70,7 @@ if(!email || !password){
 
      const token = jwt.sign({user_Id:existingUser.user_Id},process.env.SECRET_KEY,{expiresIn:"10h"})
 
- res.status(201).json({message:"SuccessFully login.",token:token})
+ res.status(200).json({message:"SuccessFully login.",token:token})
 
     }catch(err){
         console.log(err)
@@ -105,8 +105,21 @@ const forgotPasswordController=async(req,res)=>{
 
 }
 
-const userController=(req,res)=>{
+const userController=async(req,res)=>{
     const user_Id= req.user_Id
+
+    try{
+        const user = await AuthUser.findOne({user_Id})
+        if(user){
+            return res.status(200).json({message:"User get Successfull",user:user})
+        }else{
+            return res.status(404).json({message:"User Not found"})
+        }
+    }catch(err){
+        console.log(err)
+        res.status(500).json({status:"Error",message:err.message})
+    }
+
 
 
 
@@ -118,4 +131,4 @@ const userController=(req,res)=>{
 
 
 
-module.exports={registerController,loginController}
+module.exports={registerController,loginController,forgotPasswordController,userController}
