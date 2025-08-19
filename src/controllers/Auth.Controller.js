@@ -109,7 +109,8 @@ const userController=async(req,res)=>{
     const user_Id= req.user_Id
 
     try{
-        const user = await AuthUser.findOne({user_Id})
+        const user = await AuthUser.findOne({user_Id}).select("-password")
+        
         if(user){
             return res.status(200).json({message:"User get Successfull",user:user})
         }else{
