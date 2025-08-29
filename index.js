@@ -3,8 +3,12 @@ const cors = require("cors")
 const bodyparser= require("body-parser")
 
 const Auth = require("./src/routes/Auth.routes")
+const addProduct = require("./src/routes/addProducts")
+
 
 const dbConnected= require("./src/config/db")
+
+
 
 
 
@@ -29,6 +33,6 @@ app.listen(PORt,()=>{
 
 
 
-
+app.use("/dashboard",addProduct)
 
 app.use("/auth",Auth)
