@@ -1,4 +1,7 @@
 const CarProduct = require("../models/AddProduct.Model");
+const {cloudinary} = require("../config/cloudinaryConfig")
+
+
 
 const randomId = () =>
   Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
@@ -42,7 +45,13 @@ const addProductController = async (req, res) => {
       return res.status(400).json({ message: "Image is required" });
     }
 
-    const imagePath = req.file.path || req.file.url;
+console.log("Req is file ", req.file)
+    // const imagePath = req.file.path || req.file.url;
+     const imageData = {
+      url: req.file.path,       // 👈 ye Cloudinary ka secure_url hota hai
+      public_id: req.file.filename, // 👈 ye Cloudinary ka public_id hota hai
+    };
+// const imagePath= req.file.path;
 
     const newProduct = new CarProduct({
       product_Id: randomId(),
@@ -56,7 +65,8 @@ const addProductController = async (req, res) => {
       seating_capacity,
       location,
       description,
-      image: imagePath,
+      image: imageData,
+      status:"available"
     });
 
     await newProduct.save();
@@ -65,9 +75,11 @@ const addProductController = async (req, res) => {
       .status(201)
       .json({ status: "Success", message: "Product added successfully" });
   } catch (error) {
+    console.log("error",error);
     res.status(500).json({
       message: "Error adding product",
       error: error.message,
+      
     });
   }
 };
@@ -76,7 +88,7 @@ const getAllProductsController = async (req, res) => {
   try {
     const data = await CarProduct.find();
 
-    if (data.lenght === 0 || !data) {
+    if (data.length === 0 || !data) {
       return res.status(404).json({ message: "No products found" });
     }
 
@@ -91,10 +103,7 @@ const getAllProductsController = async (req, res) => {
 
 
 
-
-
-
-const deleteProduct = async (req, res) => {
+const updateProductController = async (req, res) => {
   const { id } = req.params;
 
   if (!id) {
@@ -102,11 +111,48 @@ const deleteProduct = async (req, res) => {
   }
 
   try {
-    const deletedProduct = await CarProduct.findByIdAndDelete(id);
+    const product = await CarProduct.findById(id);
 
-    if (!deletedProduct) {
+    if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    // Update product fields
+    const updatedProduct = await CarProduct.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+
+    res.status(200).json({ status: "Success", data: updatedProduct });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating product",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+const deleteProduct = async (req, res) => {
+  const { id } = req.params;
+// console.log("_id",id)
+  if (!id) {
+    return res.status(400).json({ message: "Product ID is required" });
+  }
+
+  try {
+    const product = await CarProduct.findById(id);
+console.log("PRoduct ",product);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+     if(product.image && product.image.public_id){
+      await cloudinary.uploader.destroy(product.image.public_id);
+     }
+
+await CarProduct.findByIdAndDelete(id);
 
     res.status(200).json({ status: "Success", message: "Product deleted successfully" });
   } catch (error) {

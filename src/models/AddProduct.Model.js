@@ -60,9 +60,17 @@ const ProductSchema = new mongoose.Schema(
       trim: true,
     },
     image: {
+      url: { type: String, required: true },
+      public_id: { type: String, required: true },
+    },
+  //  image: {
+  //  type: String,
+  //  required: true,
+  //   },
+    status: {
       type: String,
-      required: true,
-      trim: true,
+      enum: ["available", "unavailable", "maintenance"],
+      default: "available",
     },
   },
   { timestamps: true }

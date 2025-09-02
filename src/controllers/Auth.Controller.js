@@ -34,7 +34,7 @@ const newUser= new AuthUser( {
 
 await  newUser.save()
 
-const token = jwt.sign({user_Id:newUser.user_Id},process.env.SECRET_KEY,{expiresIn:"10h"})
+const token = jwt.sign({user_Id:newUser.user_Id},process.env.SECRET_KEY,{expiresIn:"48h"})
 
 res.status(201).json({status:"SuccessFull", message:"user created succesfully,", token:token})
 
@@ -68,7 +68,7 @@ if(!email || !password){
 
 
 
-     const token = jwt.sign({user_Id:existingUser.user_Id},process.env.SECRET_KEY,{expiresIn:"10h"})
+     const token = jwt.sign({user_Id:existingUser.user_Id},process.env.SECRET_KEY,{expiresIn:"48h"})
 
  res.status(200).json({message:"SuccessFully login.",token:token})
 

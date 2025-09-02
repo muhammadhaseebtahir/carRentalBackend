@@ -1,6 +1,6 @@
 const express = require("express");
 const verifyToken = require("../middlewares/AuthMiddleware");
-const upload = require("../config/cloudinaryConfig");
+const {upload} = require("../config/cloudinaryConfig");
 const { addProductController,getAllProductsController,deleteProduct } = require("../controllers/AddProducts.Controller");
 
 const router = express.Router();
