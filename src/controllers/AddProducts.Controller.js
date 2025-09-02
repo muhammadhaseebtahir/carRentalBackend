@@ -45,7 +45,7 @@ const addProductController = async (req, res) => {
       return res.status(400).json({ message: "Image is required" });
     }
 
-console.log("Req is file ", req.file)
+// console.log("Req is file ", req.file)
     // const imagePath = req.file.path || req.file.url;
      const imageData = {
       url: req.file.path,       // 👈 ye Cloudinary ka secure_url hota hai
@@ -86,7 +86,7 @@ console.log("Req is file ", req.file)
 
 const getAllProductsController = async (req, res) => {
   try {
-    const data = await CarProduct.find();
+    const data = await CarProduct.find().sort({ createdAt: -1 });
 
     if (data.length === 0 || !data) {
       return res.status(404).json({ message: "No products found" });
@@ -105,7 +105,9 @@ const getAllProductsController = async (req, res) => {
 
 const updateProductController = async (req, res) => {
   const { id } = req.params;
-
+  console.log("Updating product with ID:", id);
+  console.log("Request body:", req.body);
+  console.log("Request file:", req.file);
   if (!id) {
     return res.status(400).json({ message: "Product ID is required" });
   }
@@ -117,10 +119,24 @@ const updateProductController = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+let updatedData= {...JSON.parse(req.body.product)}
+if(req.file){
+  if(product.image && product.image.public_id){
+    await cloudinary.uploader.destroy(product.image.public_id);
+  }
+
+  updatedData.image={
+    url: req.file.path,
+    public_id: req.file.filename,
+  };
+}
+
     // Update product fields
-    const updatedProduct = await CarProduct.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+     const updatedProduct = await CarProduct.findOneAndUpdate(
+      { _id: id },
+      { $set: updatedData },
+      { new: true }
+    );
 
     res.status(200).json({ status: "Success", data: updatedProduct });
   } catch (error) {
@@ -170,4 +186,4 @@ await CarProduct.findByIdAndDelete(id);
 
 
 
-module.exports = { addProductController,getAllProductsController,deleteProduct };
+module.exports = { addProductController,getAllProductsController,deleteProduct,updateProductController };
