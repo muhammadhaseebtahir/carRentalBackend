@@ -6,7 +6,7 @@ const { addProductController,getAllProductsController,deleteProduct,updateProduc
 const router = express.Router();
 
 router.post("/addproduct", verifyToken, upload.single("image"), addProductController);
-router.get("/getProducts", verifyToken, getAllProductsController);
+router.get("/getProducts", getAllProductsController);
 
 router.put("/updateProduct/:id",verifyToken, upload.single("image"),updateProductController)
 

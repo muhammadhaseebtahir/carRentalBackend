@@ -32,7 +32,7 @@ app.listen(PORt,()=>{
 })
 
 
-
+app.use("/booking",require("./src/routes/Bookings.routes"))
 app.use("/dashboard",addProduct)
 
 app.use("/auth",Auth)

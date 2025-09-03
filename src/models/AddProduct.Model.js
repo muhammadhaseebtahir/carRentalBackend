@@ -62,11 +62,7 @@ const ProductSchema = new mongoose.Schema(
     image: {
       url: { type: String, required: true },
       public_id: { type: String, required: true },
-    },
-  //  image: {
-  //  type: String,
-  //  required: true,
-  //   },
+    },  
     status: {
       type: String,
       enum: ["available", "unavailable", "maintenance"],
@@ -76,4 +72,5 @@ const ProductSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("CarProduct", ProductSchema);
+const CarProduct = mongoose.model("CarProduct", ProductSchema);
+module.exports = CarProduct;

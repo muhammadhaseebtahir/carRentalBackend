@@ -34,7 +34,7 @@ const newUser= new AuthUser( {
 
 await  newUser.save()
 
-const token = jwt.sign({user_Id:newUser.user_Id},process.env.SECRET_KEY,{expiresIn:"48h"})
+const token = jwt.sign({_id:newUser._id},process.env.SECRET_KEY,{expiresIn:"48h"})
 
 res.status(201).json({status:"SuccessFull", message:"user created succesfully,", token:token})
 
@@ -68,7 +68,7 @@ if(!email || !password){
 
 
 
-     const token = jwt.sign({user_Id:existingUser.user_Id},process.env.SECRET_KEY,{expiresIn:"48h"})
+     const token = jwt.sign({_id:existingUser._id},process.env.SECRET_KEY,{expiresIn:"48h"})
 
  res.status(200).json({message:"SuccessFully login.",token:token})
 
@@ -106,10 +106,10 @@ const forgotPasswordController=async(req,res)=>{
 }
 
 const userController=async(req,res)=>{
-    const user_Id= req.user_Id
+    const _id= req._id
 
     try{
-        const user = await AuthUser.findOne({user_Id}).select("-password")
+        const user = await AuthUser.findOne({_id}).select("-password")
         
         if(user){
             return res.status(200).json({message:"User get Successfull",user:user})
