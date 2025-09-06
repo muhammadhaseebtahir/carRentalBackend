@@ -46,7 +46,7 @@ status:{
   default:"active"
 }
   
-},{timestamp:true});
+},{timestamps:true});
 
 
 const AuthUser = mongoose.model("User",AuthSchema)

@@ -2,18 +2,18 @@ const Booking = require("../models/Booking.Model");
 const CarProduct = require("../models/AddProduct.Model");
 const AuthUser = require("../models/Auth.model");
 
-const checkAvaliability = async (car, pickUpDate, returnDate) => {
+const checkAvaliability = async (car, pickupDate, returnDate) => {
   const bookings = await Booking.find({
     car,
-    pickUpDate: { $lte: returnDate },
-    returnDate: { $gte: pickUpDate },
+    pickupDate: { $lte: returnDate },
+    returnDate: { $gte: pickupDate },
   });
 
   return bookings.length === 0;
 };
 
 const checkAvaliabilityOfCar = async (req, res) => {
-  const { location, pickUpDate, returnDate } = req.body;
+  const { location, pickupDate, returnDate } = req.body;
 
   try {
     const cars = await CarProduct.find({ location, status: "available" });
@@ -23,7 +23,7 @@ const checkAvaliabilityOfCar = async (req, res) => {
     for (const car of cars) {
       const isAvailable = await checkAvaliability(
         car._id,
-        pickUpDate,
+        pickupDate,
         returnDate
       );
       if (isAvailable) {
@@ -42,9 +42,15 @@ const checkAvaliabilityOfCar = async (req, res) => {
 // *************create Booking***********
 
 const createBooking = async (req, res) => {
-  const { _id } = req._id;
+  const _id  = req._id;
 
   const { car, pickupDate, returnDate } = req.body;
+
+  if (!car || !pickupDate || !returnDate) {
+    return res
+      .status(400)
+      .json({ message: "Car, pickup date and return date are required." });
+  }
 
   try {
     const isAvailable = await checkAvaliability(car, pickupDate, returnDate);
@@ -64,23 +70,25 @@ const createBooking = async (req, res) => {
 
     res.status(201).json({ message: "Booking created successfully" });
   } catch (error) {
-    console.log(error.message);
-
-    return res.status(500).json({ error: error.message });
-  }
+  console.error(error); // pura error print (sirf message nahi)
+  return res.status(500).json({
+    status: "Error",
+    message: error.message || "Internal Server Error",
+  });
+}
 };
 
 // ***********List user Booking*********
 
 const getUserBooking = async (req, res) => {
-  const { _id } = req;
+  const  _id  = req;
   try {
     const bookings = await Booking.find({ user: _id })
       .populate("car")
       .sort({ createdAt: -1 });
 
       
-
+console.log("bookings",bookings.length)
     res.status(200).json({ bookings });
 
 
@@ -94,15 +102,23 @@ const getUserBooking = async (req, res) => {
 // *************Owner Booking**********
 
 const getOwnerBooking = async (req, res) => {
-  const { _id } = req._id;
+  const  _id  = req._id;
+  
   try {
     const getUser = await AuthUser.findById(_id);
+  
+
     if (getUser.role[0] !== "admin") {
       return res
         .status(404)
         .json({ status: "failed", message: "unauthorized access" });
     }
-    const Bookings = await Booking.find().populate("car user").select("-user.password").sort({ createdAt: -1 });
+const Bookings = await Booking.find()
+  .populate([
+    { path: "car" },
+    { path: "user", select: "-password" }
+  ])
+  .sort({ createdAt: -1 });
 
     res.status(200).json({ Bookings }); 
 
@@ -135,6 +151,67 @@ const ChangeBookingStatus=async(req,res)=>{
     }
 }
 
+const deletBooking=async(req,res)=>{
+   const { id } = req.params;
+   
+if(!id){
+  return res.status(400).json({ message: "Product ID is required" })
+}
+   try{
+ const getBookingProduct = await  Booking.findById(id)
+ if(!getBookingProduct){
+  return res.status(404).json({ message: "Product not found" })
+ }  
+ await Booking.findByIdAndDelete(id);
+
+    res.status(200).json({ status: "Success", message: "Product deleted successfully" });
+
+   }catch(error){
+    console.log(error.message);
+    return res.status(500).json({error:error.message})
+    
+   }
+
+
+  }
+
+
+const getDashboardData=async(req,res)=>{
+const _id= req._id
+
+try{
+  const getUser = await  AuthUser.findById(_id)
+  if(getUser.role[0] !== "admin"){
+     return res
+        .status(404)
+        .json({ status: "failed", message: "unauthorized access" });
+  }
+
+  const cars = await  CarProduct.find({})
+  const bookigs = await Booking.find().populate("car").sort({createdAt:-1})
+  const pendingBooking = await Booking.find({status:"pending"})
+const completeBooking = await Booking.find({status:"confirmed"})
+
+const monthlyRevenue =bookigs.slice().filter(booking=>booking.status === "confirmed")
+.reduce((acc,booking)=>acc + booking.price,0)
+const DashboardData={
+  totalsCars:cars.length,
+  totalBooking:bookigs.length,
+  completeBooking:completeBooking.length,
+  pendingBooking:pendingBooking.length,
+ recentBooking:bookigs.slice(0,3),
+monthlyRevenue
+}
+res.status(200).json({DashboardData})
+
+
+}catch(error){
+  console.log(error.message)
+  return res.status(500).json({status:"error",message:error.message})
+}
+
+}
+
 
 
 module.exports = {
@@ -143,5 +220,7 @@ module.exports = {
     createBooking,
     getUserBooking,
     getOwnerBooking,
-    ChangeBookingStatus
+    ChangeBookingStatus,
+    deletBooking,
+    getDashboardData
 };

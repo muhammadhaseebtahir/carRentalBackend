@@ -34,6 +34,8 @@ const newUser= new AuthUser( {
 
 await  newUser.save()
 
+console.log("new user:", newUser._id);
+
 const token = jwt.sign({_id:newUser._id},process.env.SECRET_KEY,{expiresIn:"48h"})
 
 res.status(201).json({status:"SuccessFull", message:"user created succesfully,", token:token})

@@ -4,7 +4,7 @@ const bodyparser= require("body-parser")
 
 const Auth = require("./src/routes/Auth.routes")
 const addProduct = require("./src/routes/addProducts")
-
+const bookings= require("./src/routes/Bookings.routes")
 
 const dbConnected= require("./src/config/db")
 
@@ -32,7 +32,7 @@ app.listen(PORt,()=>{
 })
 
 
-app.use("/booking",require("./src/routes/Bookings.routes"))
+app.use("/booking",bookings)
 app.use("/dashboard",addProduct)
 
 app.use("/auth",Auth)
