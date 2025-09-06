@@ -88,7 +88,7 @@ const getUserBooking = async (req, res) => {
       .sort({ createdAt: -1 });
 
       
-console.log("bookings",bookings.length)
+// console.log("bookings",bookings.length)
     res.status(200).json({ bookings });
 
 
